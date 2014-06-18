@@ -1,5 +1,6 @@
 # CMake build system for TestU01 
-# 2012, Joao Paulo Magalhaes <jpmagalhaes@ist.utl.pt>
+# config.cmake - configuration
+# Copyright (C) 2014 James Hirschorn <James.Hirschorn@gmail.com>
 
 include( CheckIncludeFile )
 include( CheckIncludeFileCXX )
@@ -7,27 +8,28 @@ include( CheckCXXSourceCompiles )
 include( CheckTypeSize )
 include( TestBigEndian )
 include( CheckFunctionExists )
+include( CheckCSourceCompiles )
 include( CheckSymbolExists )
 
 #------------------------------------------------
 # General info
 
 # Name of package
-set ( PACKAGE "testu01" )
+set( PACKAGE "testu01" )
 # Define to the address where bug reports for this package should be sent.
-set ( PACKAGE_BUGREPORT "lecuyer@iro.umontreal.ca" )
+set( PACKAGE_BUGREPORT "lecuyer@iro.umontreal.ca" )
 # Define to the full name of this package.
-set ( PACKAGE_NAME "TestU01" )
+set( PACKAGE_NAME "TestU01" )
 # Define to the version of this package.
-set ( PACKAGE_VERSION "${TestU01_VERSION_STRING}" )
+set( PACKAGE_VERSION "${TestU01_VERSION_STRING}" )
 # Define to the full name and version of this package.
-set ( PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}" )
+set( PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}" )
 # Define to the one symbol short name of this package.
-set ( PACKAGE_TARNAME "${PACKAGE}" )
+set( PACKAGE_TARNAME "${PACKAGE}" )
 # Define to the home page for this package.
-set ( PACKAGE_URL "http://www.iro.umontreal.ca/~simardr/testu01/tu01.html" )
+set( PACKAGE_URL "http://www.iro.umontreal.ca/~simardr/testu01/tu01.html" )
 # Define to the version of this package.
-set ( VERSION "${TestU01_VERSION_STRING}" )
+set( VERSION "${TestU01_VERSION_STRING}" )
 
 #------------------------------------------------
 # Check for existence of include files.
@@ -63,16 +65,7 @@ macro ( testu01_process_option option symbol )
   endif ()
 endmacro ()
 
-
-#testu01_process_option ( TestU01_ENABLE_MSG_TRACING QL_ENABLE_TRACING )
-
-# this one must be switched
-if ( TestU01_ENABLE_DEPRECATED_CODE )
-  set ( testu01_disable_depr OFF )
-else ()
-  set ( testu01_disable_depr ON )
-endif ()
-testu01_process_option ( testu01_disable_depr QL_DISABLE_DEPRECATED )
+# Currently there are no user options.
 
 #------------------------------------------------
 # Determine the processor Endian type.
@@ -88,12 +81,44 @@ check_type_size( "uint8_t" UINT8_T )
 check_type_size( "size_t" SIZE_T )
 
 #------------------------------------------------
+# Check for math library.
+if( NOT DEFINED LIBM )
+  set( LIBM_MESSAGE "Looking for math library" )
+  message( STATUS ${LIBM_MESSAGE} )
+  find_library( LIBM m )
+  if( LIBM )
+    set( TestU01_LIBRARIES ${TestU01_LIBRARIES} ${LIBM} )
+    message( STATUS ${LIBM_MESSAGE} " - found" )
+  else( LIBM )
+    mark_as_advanced( LIBM )
+    message( STATUS ${LIBM_MESSAGE} " - not found" )
+  endif( LIBM )
+  unset( LIBM_MESSAGE )
+endif( NOT DEFINED LIBM )
+
+#------------------------------------------------
 # Check for math functions.
 
-check_symbol_exists( "erf" "tgmath.h;xtgmath.h" ERF )
-check_symbol_exists( "random" "tgmath.h;xtgmath.h" RANDOM )
-check_symbol_exists( "lgamma" "tgmath.h;xtgmath.h" LGAMMA )
-check_symbol_exists( "log1p" "tgmath.h;xtgmath.h" LOG1P )
+set( CMAKE_REQUIRED_LIBRARIES ${TestU01_LIBRARIES} )
+macro( check_math_function_exists symbol test_value variable )
+  set( code "
+#include \"math.h\"
+#include \"tgmath.h\"
+
+int main( int argc, char *argv[] )
+{
+  double a = ${symbol}(${test_value}); 
+  return 0;
+}
+" )
+  check_c_source_compiles( "${code}" ${variable} )
+  unset( code )
+endmacro()
+
+check_math_function_exists( erf 0.0 HAVE_ERF )
+check_math_function_exists( random "" HAVE_RANDOM )
+check_math_function_exists( lgamma 0.0 HAVE_LGAMMA )
+check_math_function_exists( log1p 0.0 HAVE_LOG1P )
 
 #------------------------------------------------
 # DONE - configure the files, creating config.h and gdefconf.h

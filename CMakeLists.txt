@@ -1,10 +1,10 @@
 #############################################################################
 # CMake Build System for TestU01                                            #
-#																			#
-# Copyright (C) 2014 James Hirschorn <James.Hirschorn@gmail.com>			#
+#						                            #
+# Copyright (C) 2014 James Hirschorn <James.Hirschorn@gmail.com>	    #
 #############################################################################
 
-cmake_minimum_required ( VERSION 2.8 )
+cmake_minimum_required( VERSION 2.8 )
 
 project( TestU01 )
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
@@ -16,8 +16,8 @@ set( TestU01_VERSION_STRING "${TestU01_MAJOR_VERSION}.${TestU01_MINOR_VERSION}" 
 #--------------------------------------------------
 # initial settings - cached
 
-OPTION ( TestU01_BUILD_STATIC "Build a static library." ON )
-OPTION ( TestU01_BUILD_SHARED "Build a shared library." OFF )
+option( TestU01_BUILD_STATIC "Build a static library." ON )
+option( TestU01_BUILD_SHARED "Build a shared library." OFF )
 
 #--------------------------------------------------
 # initial settings - non-cached
@@ -25,14 +25,16 @@ OPTION ( TestU01_BUILD_SHARED "Build a shared library." OFF )
 set( TestU01_ROOT_DIR  ${PROJECT_SOURCE_DIR} )
 # resolve the path without any relative components
 get_filename_component( tmp ${TestU01_ROOT_DIR} REALPATH )
-set( TestU01_ROOT_DIR  ${tmp} ) 
+set( TestU01_ROOT_DIR ${tmp} ) 
 
-set( TestU01_TESTU01_DIR   ${TestU01_ROOT_DIR}/testu01 )
+set( TestU01_TESTU01_DIR ${TestU01_ROOT_DIR}/testu01 )
 set( TestU01_INCLUDE_DIR ${TestU01_ROOT_DIR}/include )
 set( TestU01_MYLIB_DIR ${TestU01_ROOT_DIR}/mylib )
 set( TestU01_PROBDIST_DIR ${TestU01_ROOT_DIR}/probdist )
 set( TestU01_EXAMPLES_DIR ${TestU01_ROOT_DIR}/examples )
 set( TestU01_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR} )
+
+set( TestU01_LIBRARIES "" )
 
 set( CMAKE_MODULE_PATH "${TestU01_ROOT_DIR}/build/CMake/modules" )
 
@@ -147,9 +149,9 @@ install( TARGETS TestU01
 )
 
 # install headers ----------------------------------------
-install ( DIRECTORY ${TestU01_SRC_DIR} 
-  DESTINATION include 
-  FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
+install( DIRECTORY ${TestU01_INCLUDE_DIR} 
+  DESTINATION . 
+  FILES_MATCHING PATTERN "*.h"
 )
 
 # install FindTestU01-------------------------------------
